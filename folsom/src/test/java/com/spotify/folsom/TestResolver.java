@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015 Spotify AB
+ * Copyright (c) 2014-2019 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,19 +14,23 @@
  * the License.
  */
 
-package com.spotify.folsom.ketama;
+package com.spotify.folsom;
 
-import com.google.common.hash.HashCode;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
+import java.util.List;
 
-public final class Hasher {
+public class TestResolver implements Resolver {
+  private List<ResolveResult> results;
 
-  private static final HashFunction MURMUR = Hashing.murmur3_32_fixed();
-
-  public static HashCode hash(final byte[] key) {
-    return MURMUR.hashBytes(key);
+  public TestResolver(List<ResolveResult> initialResults) {
+    this.results = initialResults;
   }
 
-  private Hasher() {}
+  public void setResults(List<ResolveResult> results) {
+    this.results = results;
+  }
+
+  @Override
+  public List<ResolveResult> resolve() {
+    return results;
+  }
 }

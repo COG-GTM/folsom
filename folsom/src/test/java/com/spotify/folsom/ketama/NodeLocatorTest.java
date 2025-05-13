@@ -68,7 +68,7 @@ public class NodeLocatorTest {
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    MockitoAnnotations.openMocks(this);
     when(CLIENT1.isConnected()).thenReturn(true);
     when(CLIENT2.isConnected()).thenReturn(true);
     when(CLIENT3.isConnected()).thenReturn(true);

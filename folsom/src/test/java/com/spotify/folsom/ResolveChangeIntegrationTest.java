@@ -18,13 +18,8 @@ package com.spotify.folsom;
 
 import static com.spotify.folsom.ResolveKetamaIntegrationTest.toResult;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import com.spotify.dns.DnsSrvResolver;
-import com.spotify.dns.LookupResult;
 import com.spotify.folsom.client.NoopMetrics;
 import com.spotify.folsom.client.Utils;
 import com.spotify.folsom.client.ascii.DefaultAsciiMemcacheClient;
@@ -40,10 +35,10 @@ public class ResolveChangeIntegrationTest {
   private static KetamaServers servers = KetamaServers.SIMPLE_INSTANCE.get();
 
   private MemcacheClient<String> client;
-  private DnsSrvResolver dnsSrvResolver;
-  private List<LookupResult> fullResults;
-  private List<LookupResult> oneMissing;
+  private List<Resolver.ResolveResult> fullResults;
+  private List<Resolver.ResolveResult> oneMissing;
   private ResolvingKetamaClient srvKetamaClient;
+  private TestResolver testResolver;
 
   private int connections;
 
@@ -55,13 +50,11 @@ public class ResolveChangeIntegrationTest {
     fullResults = toResult(servers.getServers());
     oneMissing = ImmutableList.copyOf(fullResults.subList(0, fullResults.size() - 1));
 
-    dnsSrvResolver = mock(DnsSrvResolver.class);
-    when(dnsSrvResolver.resolve(anyString())).thenReturn(fullResults);
+    testResolver = new TestResolver(fullResults);
 
     MemcacheClientBuilder<String> builder =
         MemcacheClientBuilder.newStringClient()
-            .withResolver(
-                SrvResolver.newBuilder("memcached.srv").withSrvResolver(dnsSrvResolver).build())
+            .withResolver(testResolver)
             .withResolveRefreshPeriod(1)
             .withResolveShutdownDelay(0)
             .withMaxOutstandingRequests(10000)
@@ -90,14 +83,14 @@ public class ResolveChangeIntegrationTest {
   @Test
   public void testFlappingSrv() throws Exception {
     for (int i = 0; i < 10; i++) {
-      when(dnsSrvResolver.resolve(anyString())).thenReturn(fullResults);
+      testResolver.setResults(fullResults);
       srvKetamaClient.resolve();
       waitUntilSuccess(
           1000,
           () ->
               assertEquals("Full results (3)", fullResults.size(), client.numActiveConnections()));
 
-      when(dnsSrvResolver.resolve(anyString())).thenReturn(oneMissing);
+      testResolver.setResults(oneMissing);
       srvKetamaClient.resolve();
       waitUntilSuccess(
           1000,

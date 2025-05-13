@@ -15,7 +15,6 @@
  */
 package com.spotify.folsom;
 
-import com.google.common.base.Throwables;
 import com.thimbleware.jmemcached.Cache;
 import com.thimbleware.jmemcached.CacheElement;
 import com.thimbleware.jmemcached.CacheImpl;
@@ -69,7 +68,7 @@ public class EmbeddedServer {
     try (ServerSocket tmpSocket = new ServerSocket(0)) {
       return tmpSocket.getLocalPort();
     } catch (IOException e) {
-      throw Throwables.propagate(e);
+      throw new RuntimeException(e);
     }
   }
 

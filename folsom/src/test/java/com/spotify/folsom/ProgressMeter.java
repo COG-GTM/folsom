@@ -103,7 +103,7 @@ public class ProgressMeter {
 
     com.sun.management.OperatingSystemMXBean operatingSystemMXBean =
         (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-    double totalCPU = 100.0 * operatingSystemMXBean.getSystemCpuLoad();
+    double totalCPU = 100.0 * operatingSystemMXBean.getCpuLoad();
     double processCPU = 100.0 * operatingSystemMXBean.getProcessCpuLoad();
     System.out.printf(
         "%,10d (%,10d) %s/s. %,10.9f ms average latency. "

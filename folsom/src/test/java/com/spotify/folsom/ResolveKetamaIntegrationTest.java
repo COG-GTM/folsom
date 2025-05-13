@@ -19,7 +19,6 @@ package com.spotify.folsom;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.spotify.dns.LookupResult;
 import com.spotify.folsom.client.NoopMetrics;
 import com.spotify.folsom.client.Utils;
 import com.spotify.futures.CompletableFutures;
@@ -46,9 +45,7 @@ public class ResolveKetamaIntegrationTest {
 
     MemcacheClientBuilder<String> builder =
         MemcacheClientBuilder.newStringClient()
-            .withSRVRecord("memcached.srv")
-            .withSrvResolver(s -> toResult(servers.getServers()))
-            .withSRVShutdownDelay(1000)
+            .withResolver(() -> toResult(servers.getServers()))
             .withMaxOutstandingRequests(10000)
             .withMetrics(NoopMetrics.INSTANCE)
             .withRetry(false)
@@ -59,10 +56,10 @@ public class ResolveKetamaIntegrationTest {
     servers.flush();
   }
 
-  public static List<LookupResult> toResult(List<MemcachedServer> servers) {
+  public static List<Resolver.ResolveResult> toResult(List<MemcachedServer> servers) {
     return servers
         .stream()
-        .map(server -> LookupResult.create(server.getHost(), server.getPort(), 100, 100, 100))
+        .map(server -> new Resolver.ResolveResult(server.getHost(), server.getPort(), 100))
         .collect(Collectors.toList());
   }
 

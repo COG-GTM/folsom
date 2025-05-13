@@ -17,10 +17,10 @@
 package com.spotify.folsom;
 
 import static io.netty.util.CharsetUtil.UTF_8;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 

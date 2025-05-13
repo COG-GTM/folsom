@@ -18,7 +18,8 @@ package com.spotify.folsom.authenticate;
 import static com.spotify.folsom.MemcacheStatus.OK;
 import static com.spotify.hamcrest.future.CompletableFutureMatchers.stageWillCompleteWithValueThat;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.spotify.folsom.BinaryMemcacheClient;
 import com.spotify.folsom.MemcacheAuthenticationException;
@@ -29,12 +30,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class BinaryAuthenticatedMemcacheClientTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String USERNAME = "theuser";
   private static final String PASSWORD = "a_nice_password";
@@ -83,7 +81,7 @@ public class BinaryAuthenticatedMemcacheClientTest {
   }
 
   @Test
-  public void testFailedAuthentication() throws InterruptedException, TimeoutException {
+  public void testFailedAuthentication() {
     MemcacheClient<String> client =
         MemcacheClientBuilder.newStringClient()
             .withAddress(saslServer.getHost(), saslServer.getPort())
@@ -91,42 +89,42 @@ public class BinaryAuthenticatedMemcacheClientTest {
             .withUsernamePassword(USERNAME, WRONG_PASSWORD)
             .connectBinary();
 
-    thrown.expect(MemcacheAuthenticationException.class);
-    client.awaitConnected(20, TimeUnit.SECONDS);
+    assertThrows(
+        MemcacheAuthenticationException.class, () -> client.awaitConnected(20, TimeUnit.SECONDS));
   }
 
   @Test
-  public void unAuthorizedBinaryClientFails() throws InterruptedException, TimeoutException {
+  public void unAuthorizedBinaryClientFails() {
     MemcacheClient<String> client =
         MemcacheClientBuilder.newStringClient()
             .withAddress(saslServer.getHost(), saslServer.getPort())
             .connectBinary();
 
-    thrown.expect(MemcacheAuthenticationException.class);
-    client.awaitConnected(20, TimeUnit.SECONDS);
+    assertThrows(
+        MemcacheAuthenticationException.class, () -> client.awaitConnected(20, TimeUnit.SECONDS));
   }
 
   @Test
-  public void unAuthorizedAsciiClientFails() throws InterruptedException, TimeoutException {
+  public void unAuthorizedAsciiClientFails() {
     MemcacheClient<String> client =
         MemcacheClientBuilder.newStringClient()
             .withAddress(saslServer.getHost(), saslServer.getPort())
             .connectAscii();
 
-    thrown.expect(TimeoutException.class);
-    client.awaitConnected(1, TimeUnit.SECONDS);
+    assertThrows(TimeoutException.class, () -> client.awaitConnected(1, TimeUnit.SECONDS));
   }
 
   @Test
-  public void testKetamaFailure() throws InterruptedException, TimeoutException {
+  public void testKetamaFailure() {
     BinaryMemcacheClient<String> client =
         MemcacheClientBuilder.newStringClient()
             .withAddress(saslServer.getHost(), saslServer.getPort())
             .withAddress(noAuthServer.getHost(), noAuthServer.getPort())
             .connectBinary();
 
-    thrown.expect(MemcacheAuthenticationException.class);
-    client.awaitFullyConnected(10, TimeUnit.SECONDS);
+    assertThrows(
+        MemcacheAuthenticationException.class,
+        () -> client.awaitFullyConnected(10, TimeUnit.SECONDS));
   }
 
   @Test

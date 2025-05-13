@@ -73,7 +73,7 @@ public class OpenCensusTest {
 
     builder =
         MemcacheClientBuilder.newByteArrayClient()
-            .withAddress(container.getContainerIpAddress(), container.getFirstMappedPort())
+            .withAddress(container.getHost(), container.getFirstMappedPort())
             .withTracer(new OpenCensus.Builder().withIncludeValues(true).build());
   }
 

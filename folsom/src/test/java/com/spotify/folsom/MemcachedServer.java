@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.FixedHostPortGenericContainer;
+import org.testcontainers.containers.GenericContainer;
 
 public class MemcachedServer {
 
@@ -33,7 +33,7 @@ public class MemcachedServer {
     ASCII
   }
 
-  private final FixedHostPortGenericContainer container;
+  private final GenericContainer<?> container;
   private MemcacheClient<String> client;
 
   public static final Supplier<MemcachedServer> SIMPLE_INSTANCE =
@@ -84,7 +84,8 @@ public class MemcachedServer {
     }
 
     if (port != DEFAULT_PORT) {
-      container.withFixedExposedPort(DEFAULT_PORT, port);
+      container.withExposedPorts(DEFAULT_PORT);
+      container.setPortBindings(java.util.Collections.singletonList(port + ":" + DEFAULT_PORT));
     } else {
       container.withExposedPorts(DEFAULT_PORT);
     }
@@ -92,10 +93,10 @@ public class MemcachedServer {
     start(authenticationMode);
   }
 
-  private FixedHostPortGenericContainer setupContainer(
+  private GenericContainer<?> setupContainer(
       String username, String password, AuthenticationMode authenticationMode) {
-    final FixedHostPortGenericContainer container =
-        new FixedHostPortGenericContainer("bitnami/memcached:" + MEMCACHED_VERSION);
+    final GenericContainer<?> container =
+        new GenericContainer<>("bitnami/memcached:" + MEMCACHED_VERSION);
 
     switch (authenticationMode) {
       case NONE:
@@ -115,9 +116,9 @@ public class MemcachedServer {
     return container;
   }
 
-  private FixedHostPortGenericContainer setupTLSContainer() {
-    final FixedHostPortGenericContainer container =
-        new FixedHostPortGenericContainer("bitnami/memcached:" + MEMCACHED_VERSION);
+  private GenericContainer<?> setupTLSContainer() {
+    final GenericContainer<?> container =
+        new GenericContainer<>("bitnami/memcached:" + MEMCACHED_VERSION);
 
     container.withClasspathResourceMapping(
         "/pki/test.pem", "/test-certs/test.pem", BindMode.READ_ONLY);
@@ -191,7 +192,7 @@ public class MemcachedServer {
   }
 
   public String getHost() {
-    return container.getContainerIpAddress();
+    return container.getHost();
   }
 
   public void flush() {
