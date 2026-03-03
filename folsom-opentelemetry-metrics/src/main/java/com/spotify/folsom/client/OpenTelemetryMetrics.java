@@ -85,8 +85,7 @@ public class OpenTelemetryMetrics implements Metrics {
 
   private void outstandingRequestsObservable(final ObservableDoubleMeasurement measurement) {
     measurement.record(
-        outstandingRequests
-            .stream()
+        outstandingRequests.stream()
             .mapToLong(value -> (long) value.getOutstandingRequests())
             .sum());
   }
@@ -122,13 +121,14 @@ public class OpenTelemetryMetrics implements Metrics {
           final long duration = System.nanoTime() - start;
           durations.record(duration, OPERATION_MULTIGET_TAG);
           if (throwable == null) {
-            for (final GetResult<byte[]> result : results) {
-              if (result != null) {
-                multigets.add(ONE, HIT_TAGS);
-              } else {
-                multigets.add(ONE, MISS_TAGS);
-              }
-            }
+            results.forEach(
+                result -> {
+                  if (result != null) {
+                    multigets.add(ONE, HIT_TAGS);
+                  } else {
+                    multigets.add(ONE, MISS_TAGS);
+                  }
+                });
           } else {
             multigets.add(ONE, FAILURE_TAGS);
           }

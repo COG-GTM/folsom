@@ -39,33 +39,29 @@ class BatchFlusher {
   private int pending;
 
   /** Used to flush all outstanding writes in the outbound channel buffer. */
-  private final Runnable flush =
-      new Runnable() {
-        @Override
-        public void run() {
-          pending = 0;
-          channel.flush();
-        }
-      };
+  private final Runnable flush;
 
   /**
    * Used to wake up the event loop and schedule a flush to be performed after all outstanding write
    * tasks are run. The outstanding write tasks must be allowed to run before performing the actual
    * flush in order to ensure that their payloads have been written to the outbound buffer.
    */
-  private final Runnable wakeup =
-      new Runnable() {
-        @Override
-        public void run() {
-          woken = 0;
-          eventLoop.execute(flush);
-        }
-      };
+  private final Runnable wakeup;
 
   public BatchFlusher(final Channel channel, final int maxPending) {
     this.channel = channel;
     this.maxPending = maxPending;
     this.eventLoop = channel.eventLoop();
+    this.flush =
+        () -> {
+          pending = 0;
+          channel.flush();
+        };
+    this.wakeup =
+        () -> {
+          woken = 0;
+          eventLoop.execute(flush);
+        };
   }
 
   /** Schedule an asynchronous opportunistically batching flush. */
