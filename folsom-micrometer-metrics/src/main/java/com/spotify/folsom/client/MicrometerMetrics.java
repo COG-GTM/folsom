@@ -149,13 +149,8 @@ public class MicrometerMetrics implements Metrics {
           if (t == null) {
             multigetCalls.record(duration, NANOSECONDS);
 
-            int hits = 0;
-            int total = result.size();
-            for (GetResult<byte[]> getResult : result) {
-              if (getResult != null) {
-                hits++;
-              }
-            }
+            long hits = result.stream().filter(java.util.Objects::nonNull).count();
+            long total = result.size();
 
             multigetHits.increment(hits);
             multigetMisses.increment(total - hits);

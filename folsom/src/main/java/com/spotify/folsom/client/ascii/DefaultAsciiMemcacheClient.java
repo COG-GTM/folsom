@@ -304,12 +304,10 @@ public class DefaultAsciiMemcacheClient<V> implements AsciiMemcacheClient<V> {
     final List<List<byte[]>> keyPartition =
         Lists.partition(keys, MemcacheEncoder.MAX_MULTIGET_SIZE);
     final List<CompletionStage<List<GetResult<byte[]>>>> futureList =
-        new ArrayList<>(keyPartition.size());
-
-    for (final List<byte[]> part : keyPartition) {
-      MultigetRequest request = MultigetRequest.create(part, withCas);
-      futureList.add(rawMemcacheClient.send(request));
-    }
+        keyPartition.stream()
+            .map(part -> MultigetRequest.create(part, withCas))
+            .map(rawMemcacheClient::send)
+            .collect(Collectors.toList());
 
     final CompletionStage<List<GetResult<byte[]>>> future =
         ((CompletionStage<List<List<GetResult<byte[]>>>>) CompletableFutures.allAsList(futureList))
