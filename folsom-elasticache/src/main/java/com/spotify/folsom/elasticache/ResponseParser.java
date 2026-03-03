@@ -34,7 +34,7 @@ public class ResponseParser {
       final String response = reader.readLine().trim();
 
       if (response.startsWith("CONFIG cluster ")) {
-        final int configVersion = Integer.valueOf(reader.readLine()); // configuration version
+        final int configVersion = Integer.parseInt(reader.readLine()); // configuration version
 
         final List<String> hosts = Splitter.on(' ').splitToList(reader.readLine());
 
@@ -46,7 +46,7 @@ public class ResponseParser {
           }
 
           // the private IP is not guaranteed to be included, so use the CNAME
-          result.add(HostAndPort.fromParts(tokens.get(0), Integer.valueOf(tokens.get(2))));
+          result.add(HostAndPort.fromParts(tokens.get(0), Integer.parseInt(tokens.get(2))));
         }
 
         // validate complete response

@@ -22,8 +22,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -88,10 +88,8 @@ public abstract class AbstractRequest<V> extends CompletableFuture<V> implements
   }
 
   public static List<byte[]> encodeKeys(List<String> keys, Charset charset, int maxKeyLength) {
-    List<byte[]> res = new ArrayList<>(keys.size());
-    for (String key : keys) {
-      res.add(encodeKey(key, charset, maxKeyLength));
-    }
-    return res;
+    return keys.stream()
+        .map(key -> encodeKey(key, charset, maxKeyLength))
+        .collect(Collectors.toList());
   }
 }

@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.stream.IntStream;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -684,15 +685,15 @@ public class MemcacheClientBuilder<V> {
         addresses = ImmutableList.of(HostAndPort.fromParts(DEFAULT_HOSTNAME, DEFAULT_PORT));
       }
 
+      final List<HostAndPort> effectiveAddresses = addresses;
       final List<RawMemcacheClient> clients = createClients(addresses, binary, authenticator);
       if (addresses.size() > 1) {
         checkState(clients.size() == addresses.size());
 
-        final List<AddressAndClient> aac = new ArrayList<>(clients.size());
-        for (int i = 0; i < clients.size(); i++) {
-          final HostAndPort address = addresses.get(i);
-          aac.add(new AddressAndClient(address, clients.get(i)));
-        }
+        final List<AddressAndClient> aac =
+            IntStream.range(0, clients.size())
+                .mapToObj(i -> new AddressAndClient(effectiveAddresses.get(i), clients.get(i)))
+                .collect(Collectors.toList());
 
         client = new KetamaMemcacheClient(aac, nodeLocator.apply(aac));
       } else {
@@ -708,12 +709,9 @@ public class MemcacheClientBuilder<V> {
 
   private List<RawMemcacheClient> createClients(
       final List<HostAndPort> addresses, final boolean binary, final Authenticator authenticator) {
-
-    final List<RawMemcacheClient> clients = new ArrayList<>(addresses.size());
-    for (final HostAndPort address : addresses) {
-      clients.add(createClient(address, binary, authenticator));
-    }
-    return clients;
+    return addresses.stream()
+        .map(address -> createClient(address, binary, authenticator))
+        .collect(Collectors.toList());
   }
 
   private RawMemcacheClient createResolvingClient(
@@ -738,10 +736,10 @@ public class MemcacheClientBuilder<V> {
     if (connections == 1) {
       return createReconnectingClient(address, binary, authenticator);
     }
-    final List<RawMemcacheClient> clients = new ArrayList<>();
-    for (int i = 0; i < connections; i++) {
-      clients.add(createReconnectingClient(address, binary, authenticator));
-    }
+    final List<RawMemcacheClient> clients =
+        IntStream.range(0, connections)
+            .mapToObj(i -> createReconnectingClient(address, binary, authenticator))
+            .collect(Collectors.toList());
     return new RoundRobinMemcacheClient(clients);
   }
 
