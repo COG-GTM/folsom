@@ -130,9 +130,12 @@ public static void main(String[] args) throws Exception {
 }
 ```
 
-### Java 7 usage
+### Java 8 requirement
 
-If you are still on Java 7, you can depend on the older version:
+This project requires Java 8 or higher. The codebase uses Java 8 language features
+including lambda expressions, method references, streams, and the `CompletionStage` API.
+
+If you need Java 7 support, you can depend on the older version:
 
     <dependency>
       <groupId>com.spotify</groupId>

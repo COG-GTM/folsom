@@ -36,7 +36,6 @@ import com.spotify.folsom.client.TransformerUtil;
 import com.spotify.folsom.client.Utils;
 import com.spotify.futures.CompletableFutures;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -266,12 +265,10 @@ public class DefaultBinaryMemcacheClient<V> implements BinaryMemcacheClient<V> {
     final List<List<byte[]>> keyPartition =
         Lists.partition(keys, MemcacheEncoder.MAX_MULTIGET_SIZE);
     final List<CompletionStage<List<GetResult<byte[]>>>> futureList =
-        new ArrayList<>(keyPartition.size());
-
-    for (final List<byte[]> part : keyPartition) {
-      MultigetRequest request = MultigetRequest.create(part, ttl);
-      futureList.add(rawMemcacheClient.send(request));
-    }
+        keyPartition.stream()
+            .map(part -> MultigetRequest.create(part, ttl))
+            .map(rawMemcacheClient::send)
+            .collect(Collectors.toList());
 
     final CompletionStage<List<GetResult<byte[]>>> future =
         CompletableFutures.allAsList(futureList).thenApply(Utils.flatten());
@@ -470,10 +467,7 @@ public class DefaultBinaryMemcacheClient<V> implements BinaryMemcacheClient<V> {
 
   @Override
   public Map<String, BinaryMemcacheClient<V>> getAllNodes() {
-    return rawMemcacheClient
-        .getAllNodes()
-        .entrySet()
-        .stream()
+    return rawMemcacheClient.getAllNodes().entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey, entry -> withClient(entry.getValue())));
   }
 

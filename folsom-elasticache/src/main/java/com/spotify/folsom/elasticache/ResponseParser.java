@@ -24,8 +24,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ResponseParser {
 
@@ -34,20 +34,22 @@ public class ResponseParser {
       final String response = reader.readLine().trim();
 
       if (response.startsWith("CONFIG cluster ")) {
-        final int configVersion = Integer.valueOf(reader.readLine()); // configuration version
+        final int configVersion = Integer.parseInt(reader.readLine()); // configuration version
 
         final List<String> hosts = Splitter.on(' ').splitToList(reader.readLine());
 
-        final List<HostAndPort> result = new ArrayList<>();
-        for (final String host : hosts) {
-          final List<String> tokens = Splitter.on('|').splitToList(host);
-          if (tokens.size() != 3) {
-            throw new IOException("Expected 3 parts for a host, but got " + host);
-          }
-
-          // the private IP is not guaranteed to be included, so use the CNAME
-          result.add(HostAndPort.fromParts(tokens.get(0), Integer.valueOf(tokens.get(2))));
-        }
+        final List<HostAndPort> result =
+            hosts.stream()
+                .map(
+                    host -> {
+                      final List<String> tokens = Splitter.on('|').splitToList(host);
+                      if (tokens.size() != 3) {
+                        throw new RuntimeException("Expected 3 parts for a host, but got " + host);
+                      }
+                      // the private IP is not guaranteed to be included, so use the CNAME
+                      return HostAndPort.fromParts(tokens.get(0), Integer.parseInt(tokens.get(2)));
+                    })
+                .collect(Collectors.toList());
 
         // validate complete response
         final String emptyLine = reader.readLine();

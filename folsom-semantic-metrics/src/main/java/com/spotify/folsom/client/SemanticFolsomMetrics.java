@@ -191,13 +191,8 @@ public class SemanticFolsomMetrics implements Metrics {
           ctx.stop();
           if (t == null) {
             multigetSuccesses.mark();
-            int hits = 0;
-            int total = result.size();
-            for (GetResult<byte[]> aResult : result) {
-              if (aResult != null) {
-                hits++;
-              }
-            }
+            long hits = result.stream().filter(java.util.Objects::nonNull).count();
+            long total = result.size();
             getHits.mark(hits);
             getMisses.mark(total - hits);
           } else {
