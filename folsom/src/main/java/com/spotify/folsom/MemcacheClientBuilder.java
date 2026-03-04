@@ -708,12 +708,9 @@ public class MemcacheClientBuilder<V> {
 
   private List<RawMemcacheClient> createClients(
       final List<HostAndPort> addresses, final boolean binary, final Authenticator authenticator) {
-
-    final List<RawMemcacheClient> clients = new ArrayList<>(addresses.size());
-    for (final HostAndPort address : addresses) {
-      clients.add(createClient(address, binary, authenticator));
-    }
-    return clients;
+    return addresses.stream()
+        .map(address -> createClient(address, binary, authenticator))
+        .collect(Collectors.toList());
   }
 
   private RawMemcacheClient createResolvingClient(

@@ -38,13 +38,9 @@ public class KetamaMemcacheClient extends AbstractMultiMemcacheClient {
 
   private static Collection<RawMemcacheClient> clientsOnly(
       final Collection<AddressAndClient> addressAndClients) {
-
-    int size = addressAndClients.size();
-    final List<RawMemcacheClient> clients = new ArrayList<>(size);
-    for (final AddressAndClient client : addressAndClients) {
-      clients.add(client.getClient());
-    }
-    return clients;
+    return addressAndClients.stream()
+        .map(AddressAndClient::getClient)
+        .collect(Collectors.toList());
   }
 
   private final NodeLocator nodeLocator;
