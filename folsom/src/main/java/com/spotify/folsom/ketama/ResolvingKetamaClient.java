@@ -133,18 +133,20 @@ public class ResolvingKetamaClient extends AbstractRawMemcacheClient {
           if (!toRemove.isEmpty()) {
             log.info("Scheduling disconnect from " + toRemove);
           }
-          for (final HostAndPort host : toAdd) {
-            final RawMemcacheClient newClient = connector.connect(host);
-            newClient.registerForConnectionChanges(listener);
-            clients.put(host, newClient);
-          }
+          toAdd.forEach(
+              host -> {
+                final RawMemcacheClient newClient = connector.connect(host);
+                newClient.registerForConnectionChanges(listener);
+                clients.put(host, newClient);
+              });
 
           final ImmutableList.Builder<RawMemcacheClient> removedClients = ImmutableList.builder();
-          for (final HostAndPort host : toRemove) {
-            final RawMemcacheClient removed = clients.remove(host);
-            removed.unregisterForConnectionChanges(listener);
-            removedClients.add(removed);
-          }
+          toRemove.forEach(
+              host -> {
+                final RawMemcacheClient removed = clients.remove(host);
+                removed.unregisterForConnectionChanges(listener);
+                removedClients.add(removed);
+              });
           setPendingClient(removedClients);
         }
       } finally {

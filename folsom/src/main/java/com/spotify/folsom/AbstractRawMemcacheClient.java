@@ -35,13 +35,14 @@ public abstract class AbstractRawMemcacheClient implements RawMemcacheClient {
 
   @Override
   public final void notifyConnectionChange() {
-    for (final ConnectionChangeListener listener : listeners) {
-      try {
-        listener.connectionChanged(this);
-      } catch (Exception e) {
-        // We can't really do anything about this
-      }
-    }
+    listeners.forEach(
+        listener -> {
+          try {
+            listener.connectionChanged(this);
+          } catch (Exception e) {
+            // We can't really do anything about this
+          }
+        });
   }
 
   @VisibleForTesting

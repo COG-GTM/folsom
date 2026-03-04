@@ -32,12 +32,12 @@ import com.spotify.folsom.guava.HostAndPort;
 import com.spotify.folsom.ketama.AddressAndClient;
 import com.spotify.futures.CompletableFutures;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FakeRawMemcacheClient extends AbstractRawMemcacheClient {
@@ -83,16 +83,15 @@ public class FakeRawMemcacheClient extends AbstractRawMemcacheClient {
     }
 
     if (request instanceof MultiRequest) {
-      List<GetResult<byte[]>> result = new ArrayList<>();
       MultiRequest<?> multiRequest = (MultiRequest<?>) request;
-      for (byte[] key : multiRequest.getKeys()) {
-        byte[] value = map.get(ByteBuffer.wrap(key));
-        if (value != null) {
-          result.add(GetResult.success(value, 0, 0));
-        } else {
-          result.add(null);
-        }
-      }
+      List<GetResult<byte[]>> result =
+          multiRequest.getKeys().stream()
+              .map(
+                  key -> {
+                    byte[] value = map.get(ByteBuffer.wrap(key));
+                    return value != null ? GetResult.success(value, 0, 0) : null;
+                  })
+              .collect(Collectors.toList());
       return (CompletionStage<T>) CompletableFuture.completedFuture(result);
     }
 
