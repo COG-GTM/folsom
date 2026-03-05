@@ -1,7 +1,7 @@
 ## Folsom
 
 Folsom is an attempt at a small and stable memcache client. Folsom is fully
-asynchronous, based on Netty and uses Java 8's CompletionStage through-out the
+asynchronous, based on Netty and uses Java's CompletionStage through-out the
 API.
 
 ### Build status
@@ -15,7 +15,7 @@ API.
 
 ### Build dependencies
 
-* Java 8 or higher
+* Java 21 or higher
 * Maven
 * Docker - to run integration tests.
 
@@ -130,16 +130,6 @@ public static void main(String[] args) throws Exception {
 }
 ```
 
-### Java 7 usage
-
-If you are still on Java 7, you can depend on the older version:
-
-    <dependency>
-      <groupId>com.spotify</groupId>
-      <artifactId>folsom</artifactId>
-      <version>0.8.1</version>
-    </dependency>
-
 ### Design goals
 
 * Robustness - If you request something, the future you get back should always complete at some point.
@@ -154,7 +144,7 @@ If you are still on Java 7, you can depend on the older version:
   (ketama, reconnecting, retry, roundrobin)
 * Efficiency - We want to support a high traffic throughput without using too much CPU or memory resources.
 * Asynchronous - We fully support the idea of writing asynchronous code instead of blocking threads, and this is
-  achieved through Java 8 futures.
+  achieved through Java futures.
 * Low amount of synchronization - Code that uses a lot of synchronization primitives is more likely to have
   race condition bugs and deadlocks. We try to isolate that as much as possible to minimize the risk,
   and most of the code base doesn't have to care.
