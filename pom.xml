@@ -10,7 +10,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <skip-enforce-jdk8>true</skip-enforce-jdk8>
+    <skip-enforce-jdk21>true</skip-enforce-jdk21>
   </properties>
 
   <parent>
@@ -104,7 +104,7 @@
     <profile>
       <id>sonatype-oss-release</id>
       <properties>
-        <skip-enforce-jdk8>false</skip-enforce-jdk8>
+        <skip-enforce-jdk21>false</skip-enforce-jdk21>
       </properties>
     </profile>
   </profiles>
@@ -115,10 +115,10 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>2.5.1</version>
+          <version>3.13.0</version>
           <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
+            <source>21</source>
+            <target>21</target>
           </configuration>
         </plugin>
         <plugin>
@@ -137,7 +137,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.0.0-M1</version>
+          <version>3.6.3</version>
           <configuration>
             <show>private</show>
           </configuration>
@@ -193,7 +193,7 @@
         <artifactId>modernizer-maven-plugin</artifactId>
         <version>2.7.0</version>
         <configuration>
-          <javaVersion>1.8</javaVersion>
+          <javaVersion>21</javaVersion>
           <ignoreClassNamePatterns>
             <ignoreClassNamePattern>com.spotify.folsom.client.Utils.*</ignoreClassNamePattern>
           </ignoreClassNamePatterns>
@@ -209,7 +209,7 @@
         </executions>
       </plugin>
 
-      <!-- Require releases to be done with java 8-->
+      <!-- Require releases to be done with Java 21 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -226,10 +226,10 @@
               <failFast>true</failFast>
               <rules>
                 <requireJavaVersion>
-                  <version>[1.8.0,1.9.0)</version>
+                  <version>[21,)</version>
                 </requireJavaVersion>
               </rules>
-              <skip>${skip-enforce-jdk8}</skip>
+              <skip>${skip-enforce-jdk21}</skip>
             </configuration>
           </execution>
         </executions>
