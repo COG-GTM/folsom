@@ -23,6 +23,7 @@ import com.spotify.folsom.ObservableClient;
 import com.spotify.folsom.RawMemcacheClient;
 import com.spotify.folsom.ketama.AddressAndClient;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public abstract class AbstractMultiMemcacheClient extends AbstractRawMemcacheClient
@@ -40,37 +41,22 @@ public abstract class AbstractMultiMemcacheClient extends AbstractRawMemcacheCli
 
   @Override
   public void shutdown() {
-    for (final RawMemcacheClient client : clients) {
-      client.shutdown();
-    }
+    clients.forEach(RawMemcacheClient::shutdown);
   }
 
   @Override
   public boolean isConnected() {
-    for (final RawMemcacheClient client : clients) {
-      if (client.isConnected()) {
-        return true;
-      }
-    }
-    return false;
+    return clients.stream().anyMatch(RawMemcacheClient::isConnected);
   }
 
   @Override
   public int numTotalConnections() {
-    int sum = 0;
-    for (RawMemcacheClient client : clients) {
-      sum += client.numTotalConnections();
-    }
-    return sum;
+    return clients.stream().mapToInt(RawMemcacheClient::numTotalConnections).sum();
   }
 
   @Override
   public int numActiveConnections() {
-    int sum = 0;
-    for (RawMemcacheClient client : clients) {
-      sum += client.numActiveConnections();
-    }
-    return sum;
+    return clients.stream().mapToInt(RawMemcacheClient::numActiveConnections).sum();
   }
 
   @Override
@@ -95,12 +81,10 @@ public abstract class AbstractMultiMemcacheClient extends AbstractRawMemcacheCli
 
   @Override
   public Throwable getConnectionFailure() {
-    for (final RawMemcacheClient client : clients) {
-      final Throwable connectionFailure = client.getConnectionFailure();
-      if (connectionFailure != null) {
-        return connectionFailure;
-      }
-    }
-    return null;
+    return clients.stream()
+        .map(RawMemcacheClient::getConnectionFailure)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(null);
   }
 }

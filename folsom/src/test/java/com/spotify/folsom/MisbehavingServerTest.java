@@ -238,46 +238,43 @@ public class MisbehavingServerTest {
       port = serverSocket.getLocalPort();
       thread =
           new Thread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  try {
-                    socket = serverSocket.accept();
-                    handleConnection(socket);
-                  } catch (Throwable e) {
-                    failure = e;
-                    failure.printStackTrace();
-                  }
-                }
-
-                private void handleConnection(Socket socket) throws Exception {
-                  BufferedReader reader =
-                      new BufferedReader(new InputStreamReader(socket.getInputStream()), 1);
-                  String s;
-                  while (true) {
-                    s = reader.readLine();
-                    if (s.equals("get folsom_authentication_validation")) {
-                      // Handle authentication phase first
-                      socket.getOutputStream().write("END\r\n".getBytes(StandardCharsets.UTF_8));
-                      socket.getOutputStream().flush();
-                    } else {
-                      break;
-                    }
-                  }
-                  if (s.startsWith("get ") || s.startsWith("touch ")) {
-                    // Don't need to read any more lines
-                  } else if (s.startsWith("set ")) {
-                    // Read the value too
-                    reader.readLine();
-                  } else {
-                    throw new RuntimeException("Unhandled command: " + s);
-                  }
-                  socket.getOutputStream().write(response);
-                  socket.getOutputStream().flush();
+              () -> {
+                try {
+                  socket = serverSocket.accept();
+                  handleConnection(socket, response);
+                } catch (Throwable e) {
+                  failure = e;
+                  failure.printStackTrace();
                 }
               });
       thread.setName("misbehaving-server-thread-" + port);
       thread.start();
+    }
+
+    private static void handleConnection(Socket socket, byte[] response) throws Exception {
+      BufferedReader reader =
+          new BufferedReader(new InputStreamReader(socket.getInputStream()), 1);
+      String s;
+      while (true) {
+        s = reader.readLine();
+        if (s.equals("get folsom_authentication_validation")) {
+          // Handle authentication phase first
+          socket.getOutputStream().write("END\r\n".getBytes(StandardCharsets.UTF_8));
+          socket.getOutputStream().flush();
+        } else {
+          break;
+        }
+      }
+      if (s.startsWith("get ") || s.startsWith("touch ")) {
+        // Don't need to read any more lines
+      } else if (s.startsWith("set ")) {
+        // Read the value too
+        reader.readLine();
+      } else {
+        throw new RuntimeException("Unhandled command: " + s);
+      }
+      socket.getOutputStream().write(response);
+      socket.getOutputStream().flush();
     }
 
     public void stop() throws Exception {

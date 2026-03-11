@@ -24,15 +24,22 @@ import java.util.stream.Collectors;
 
 public class TransformerUtil<T> {
   private final Function<GetResult<T>, T> getResultToValue;
-  private final ListResultUnwrapper<T> listResultUnwrapper;
-  private final ResultDecoder<T> resultDecoder;
-  private final ListResultDecoder<T> listResultDecoder;
+  private final Function<List<GetResult<T>>, List<T>> listResultUnwrapper;
+  private final Function<GetResult<byte[]>, GetResult<T>> resultDecoder;
+  private final Function<List<GetResult<byte[]>>, List<GetResult<T>>> listResultDecoder;
 
   public TransformerUtil(Transcoder<T> transcoder) {
-    this.getResultToValue = new ResultUnwrapper<>();
-    this.listResultUnwrapper = new ListResultUnwrapper<>(getResultToValue);
-    this.resultDecoder = new ResultDecoder<>(transcoder);
-    this.listResultDecoder = new ListResultDecoder<>(resultDecoder);
+    this.getResultToValue = input -> input == null ? null : input.getValue();
+    this.listResultUnwrapper =
+        input -> input.stream().map(getResultToValue).collect(Collectors.toList());
+    this.resultDecoder =
+        input ->
+            input == null
+                ? null
+                : GetResult.success(
+                    transcoder.decode(input.getValue()), input.getCas(), input.getFlags());
+    this.listResultDecoder =
+        input -> input.stream().map(resultDecoder).collect(Collectors.toList());
   }
 
   public CompletionStage<T> unwrap(CompletionStage<GetResult<T>> future) {
@@ -50,59 +57,5 @@ public class TransformerUtil<T> {
   public CompletionStage<List<GetResult<T>>> decodeList(
       CompletionStage<List<GetResult<byte[]>>> future) {
     return future.thenApply(listResultDecoder);
-  }
-
-  private static class ResultUnwrapper<T> implements Function<GetResult<T>, T> {
-    @Override
-    public T apply(GetResult<T> input) {
-      if (input == null) {
-        return null;
-      }
-      return input.getValue();
-    }
-  }
-
-  private static class ListResultUnwrapper<T> implements Function<List<GetResult<T>>, List<T>> {
-    private final Function<GetResult<T>, T> resultUnwrapper;
-
-    public ListResultUnwrapper(Function<GetResult<T>, T> resultUnwrapper) {
-      this.resultUnwrapper = resultUnwrapper;
-    }
-
-    @Override
-    public List<T> apply(List<GetResult<T>> input) {
-      return input.stream().map(resultUnwrapper).collect(Collectors.toList());
-    }
-  }
-
-  private static class ResultDecoder<T> implements Function<GetResult<byte[]>, GetResult<T>> {
-    private final Transcoder<T> transcoder;
-
-    public ResultDecoder(Transcoder<T> transcoder) {
-      this.transcoder = transcoder;
-    }
-
-    @Override
-    public GetResult<T> apply(GetResult<byte[]> input) {
-      if (input == null) {
-        return null;
-      }
-      return GetResult.success(
-          transcoder.decode(input.getValue()), input.getCas(), input.getFlags());
-    }
-  }
-
-  private static class ListResultDecoder<T>
-      implements Function<List<GetResult<byte[]>>, List<GetResult<T>>> {
-    private final ResultDecoder<T> resultDecoder;
-
-    public ListResultDecoder(ResultDecoder<T> resultDecoder) {
-      this.resultDecoder = resultDecoder;
-    }
-
-    @Override
-    public List<GetResult<T>> apply(List<GetResult<byte[]>> input) {
-      return input.stream().map(resultDecoder).collect(Collectors.toList());
-    }
   }
 }
