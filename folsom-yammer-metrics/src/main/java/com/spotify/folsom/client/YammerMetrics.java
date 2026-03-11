@@ -95,24 +95,20 @@ public class YammerMetrics implements Metrics {
 
     final MetricName gaugeName = name("outstandingRequests", "count");
 
-    registry.newGauge(
-        gaugeName,
-        new Gauge<Long>() {
-          @Override
-          public Long value() {
-            return getOutstandingRequests();
-          }
-        });
+    registry.newGauge(gaugeName, new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return getOutstandingRequests();
+      }
+    });
 
     final MetricName globalConnections = name("global-connections", "count");
-    registry.newGauge(
-        globalConnections,
-        new Gauge<Integer>() {
-          @Override
-          public Integer value() {
-            return Utils.getGlobalConnectionCount();
-          }
-        });
+    registry.newGauge(globalConnections, new Gauge<Integer>() {
+      @Override
+      public Integer value() {
+        return Utils.getGlobalConnectionCount();
+      }
+    });
   }
 
   @VisibleForTesting
@@ -153,13 +149,8 @@ public class YammerMetrics implements Metrics {
           ctx.stop();
           if (t == null) {
             multigetSuccesses.mark();
-            int hits = 0;
-            int total = result.size();
-            for (int i = 0; i < total; i++) {
-              if (result.get(i) != null) {
-                hits++;
-              }
-            }
+            long hits = result.stream().filter(java.util.Objects::nonNull).count();
+            long total = result.size();
             getHits.mark(hits);
             getMisses.mark(total - hits);
           } else {
