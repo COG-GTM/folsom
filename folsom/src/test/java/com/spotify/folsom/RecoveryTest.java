@@ -73,7 +73,7 @@ public class RecoveryTest {
             .withMetrics(NoopMetrics.INSTANCE)
             .withRetry(false)
             .withoutAuthenticationValidation()
-            .withRequestTimeoutMillis(TIMEOUT_MILLIS);
+            .withConnectionTimeoutMillis(TIMEOUT_MILLIS);
 
     client = builder.connectBinary();
     client.awaitConnected(10, TimeUnit.SECONDS);

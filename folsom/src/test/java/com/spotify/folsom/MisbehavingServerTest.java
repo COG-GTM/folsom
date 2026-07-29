@@ -215,7 +215,7 @@ public class MisbehavingServerTest {
     MemcacheClient<String> client =
         MemcacheClientBuilder.newStringClient()
             .withAddress(server.inetAddress.getHostAddress(), server.port)
-            .withRequestTimeoutMillis(100L)
+            .withConnectionTimeoutMillis(100L)
             .withRetry(false)
             .connectAscii();
     client.awaitConnected(10, TimeUnit.SECONDS);

@@ -49,7 +49,7 @@ public class ResolveKetamaIntegrationTest {
             .withMaxOutstandingRequests(10000)
             .withMetrics(NoopMetrics.INSTANCE)
             .withRetry(false)
-            .withRequestTimeoutMillis(10 * 1000);
+            .withConnectionTimeoutMillis(10 * 1000);
     client = builder.connectAscii();
 
     client.awaitFullyConnected(10, TimeUnit.SECONDS);
