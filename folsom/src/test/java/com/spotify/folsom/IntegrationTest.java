@@ -114,7 +114,7 @@ public class IntegrationTest {
             .withMaxOutstandingRequests(1000)
             .withMetrics(NoopMetrics.INSTANCE)
             .withRetry(false)
-            .withRequestTimeoutMillis(100);
+            .withConnectionTimeoutMillis(100);
 
     if (useTls) {
       builder.withSSLEngineFactory(new DefaultSSLEngineFactory(true));

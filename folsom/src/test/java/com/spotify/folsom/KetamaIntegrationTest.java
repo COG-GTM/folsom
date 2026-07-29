@@ -76,7 +76,7 @@ public class KetamaIntegrationTest {
             .withMaxOutstandingRequests(100)
             .withMetrics(NoopMetrics.INSTANCE)
             .withRetry(false)
-            .withRequestTimeoutMillis(10 * 1000);
+            .withConnectionTimeoutMillis(10 * 1000);
     for (MemcachedServer server : servers.getServers()) {
       builder.withAddress(server.getHost(), server.getPort());
     }

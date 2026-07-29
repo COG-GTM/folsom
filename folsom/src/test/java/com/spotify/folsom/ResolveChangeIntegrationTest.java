@@ -60,7 +60,7 @@ public class ResolveChangeIntegrationTest {
             .withMaxOutstandingRequests(10000)
             .withMetrics(NoopMetrics.INSTANCE)
             .withRetry(false)
-            .withRequestTimeoutMillis(10 * 1000);
+            .withConnectionTimeoutMillis(10 * 1000);
     client = builder.connectAscii();
 
     DefaultAsciiMemcacheClient client2 = (DefaultAsciiMemcacheClient) this.client;
